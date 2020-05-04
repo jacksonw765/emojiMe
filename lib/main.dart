@@ -1,8 +1,10 @@
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:hex/hex.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
@@ -58,11 +60,36 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void run() async {
+    int indexVar = 16;
     File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
     img.Image image = img.decodeImage(imagePick.readAsBytesSync());
-    img.Channels chan = image.channels;
-    var test = image.data;
-    print(chan.toString());
-    print(test);
+    //var two = abgrToArgb(image.getPixelSafe(50, 200));
+    int width = image.width;
+    int height = image.height;
+    print(width);
+    print(height);
+    List<String> colorVales = [];
+    for(int w = 0; w <= width; ++w) {
+      for(int h = 0; h <= height; ++h) {
+        var output = image.getPixelSafe(w, h);
+        var yes = output.toRadixString(16);
+        colorVales.add(yes);
+      }
+    }
+    //img.drawString(image, img.BitmapFont.fromFnt(fnt, page), 0, 0, '🤣');
+    //img.draw
+    print('Done');
+  }
+
+  int abgrToArgb(int argbColor) {
+    int r = (argbColor >> 16) & 0xFF;
+    int b = argbColor & 0xFF;
+    return (argbColor & 0xFF00FF00) | (b << 16) | r;
+  }
+
+  Color getAverageColor(int color1, int color2) {
+
+    //var hex1 = int.
+    //var color = sqrt((R1^2+R2^2)/2),sqrt((G1^2+G2^2)/2),sqrt((B1^2+B2^2)/2)
   }
 }
