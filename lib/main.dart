@@ -68,8 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget getImage() {
     if (imagePath != null) {
-      File('$dir/tmp.png').writeAsBytesSync(img.encodePng(imagePath));
-      return Image.file(File('$dir/tmp.png'));
+      //File('$dir/tmp.png').writeAsBytesSync(img.encodePng(imagePath));
+      return Image.memory(img.encodePng(imagePath));
     } else {
       return Text('');
     }
@@ -82,26 +82,26 @@ class _MyHomePageState extends State<MyHomePage> {
   void run() async {
     final directory = await getApplicationDocumentsDirectory();
     dir = directory.path;
-    //Directory appDocDirectory = await getApplicationDocumentsDirectory();
     perm();
     int indexVar = 16;
     File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
     img.Image image = img.decodeImage(imagePick.readAsBytesSync());
-    int width = image.width;
-    int height = image.height;
-    print(width);
-    print(height);
-    List<String> colorVales = [];
-    for (int w = 0; w <= width; ++w) {
-      for (int h = 0; h <= height; ++h) {
-        var output = image.getPixelSafe(w, h);
-        var yes = output.toRadixString(16);
-        colorVales.add(yes);
+    var font = img.BitmapFont.fromZip(File(dir + "/font.zip").readAsBytesSync());
+
+    //List<String> colorVales = [];
+    img.Image image2 = img.copyResize(image, width: 256);
+    int width = image2.width;
+    int height = image2.height;
+    for (int w = 0; w <= width; w += 7) {
+      for (int h = 0; h <= height; h += 7) {
+        //AABBGGRR
+        int output = image2.getPixelSafe(w, h);
+        String yes = output.toRadixString(16);
+        img.drawString(image2, font, w, h, "☹", color: abgrToArgb(hexToColor(yes).value));
       }
     }
-    img.Image image2 = img.copyResize(image, width: 512);
-    //img.drawString(image2, img.BitmapFont.fromFnt("Ariel", image2), 0, 0, '🤣', color: Colors.blue[500].value);
-    img.drawChar(image2, img.arial_48, 256, 256, '🤣', color: Colors.black.value);
+    //if (File('$dir/tmp.png').existsSync()) await File('$dir/tmp.png').delete();
+    //img.drawChar(image2, img.arial_48, 256, 256, String.fromCharCode(128551), color: Colors.black.value);
     setState(() {
       imagePath = image2;
     });
@@ -114,6 +114,10 @@ class _MyHomePageState extends State<MyHomePage> {
     int r = (argbColor >> 16) & 0xFF;
     int b = argbColor & 0xFF;
     return (argbColor & 0xFF00FF00) | (b << 16) | r;
+  }
+
+  Color hexToColor(String code) {
+    return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
   Color getAverageColor(int color1, int color2) {
