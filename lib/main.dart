@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:hex/hex.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MyApp());
 
@@ -40,6 +42,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   img.Image imagePath;
+  String dir;
 
   @override
   Widget build(BuildContext context) {
@@ -65,24 +68,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget getImage() {
     if (imagePath != null) {
-      Uint8List _image = imagePath.data.buffer.asUint8List();
-      //print(_image);
-      //Uint8List.fromList()
-      //ByteData.view(Uint8List.fromList(a).buffer).getUint32(0);
-      return Image.memory(_image);
+      File('$dir/tmp.png').writeAsBytesSync(img.encodePng(imagePath));
+      return Image.file(File('$dir/tmp.png'));
     } else {
       return Text('');
     }
   }
 
+  void perm() async {
+    await [Permission.mediaLibrary, Permission.photos].request();
+  }
+
   void run() async {
+    final directory = await getApplicationDocumentsDirectory();
+    dir = directory.path;
+    //Directory appDocDirectory = await getApplicationDocumentsDirectory();
+    perm();
     int indexVar = 16;
     File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
-    final bytes = imagePick.readAsBytesSync();
-    String base64Image = base64Encode(bytes);
-    print(base64Image);
-    Uint8List byteList = base64Decode(base64Image);
-    img.Image image = img.decodeImage(byteList);
+    img.Image image = img.decodeImage(imagePick.readAsBytesSync());
     //var image = Image.memory(base64Image).image;
     //img.Image image = img.Image(1024, 1024);
 
@@ -105,9 +109,9 @@ class _MyHomePageState extends State<MyHomePage> {
         colorVales.add(yes);
       }
     }
-    //img.Image image2 = img.Image(width, height);
+    //img.Image image2 = img.copyResize(image, width: 1024);
     //img.drawString(image2, img.BitmapFont.fromFnt("Ariel", image2), 0, 0, '🤣', color: Colors.blue[500].value);
-    //img.drawChar(image, img.arial_14, (width / 2).floor(), (height / 2).floor(), '🤣');
+    //img.drawChar(image2, img.arial_14, (width / 2).floor(), (height / 2).floor(), '🤣');
     setState(() {
       imagePath = image;
     });

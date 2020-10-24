@@ -17,7 +17,7 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
-  image: any
+  image: ^2.1.18
   flutter:
     sdk: flutter
 
@@ -26,6 +26,8 @@ dependencies:
   cupertino_icons: ^0.1.2
   image_picker: ^0.6.5+3
   hex: ^0.1.2
+  path_provider: ^1.6.21
+  permission_handler: ^5.0.1+1
 
 dev_dependencies:
   flutter_test:
