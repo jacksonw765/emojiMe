@@ -87,16 +87,6 @@ class _MyHomePageState extends State<MyHomePage> {
     int indexVar = 16;
     File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
     img.Image image = img.decodeImage(imagePick.readAsBytesSync());
-    //var image = Image.memory(base64Image).image;
-    //img.Image image = img.Image(1024, 1024);
-
-    //img.Image image = img.decodeImage(base64Decode(base64));
-    //final bytes = Io.File(imageBytes.path).readAsBytesSync()
-    //img.Image =
-    //img.Image image = img.Image(1024, 1024, exif: imagePick.read);
-    //Uint8List test = imagePick.readAsBytesSync();
-    //Img.Image poo = Im
-    //img.Image image = img.Image(200, 200, exif: );
     int width = image.width;
     int height = image.height;
     print(width);
@@ -109,11 +99,11 @@ class _MyHomePageState extends State<MyHomePage> {
         colorVales.add(yes);
       }
     }
-    //img.Image image2 = img.copyResize(image, width: 1024);
+    img.Image image2 = img.copyResize(image, width: 512);
     //img.drawString(image2, img.BitmapFont.fromFnt("Ariel", image2), 0, 0, '🤣', color: Colors.blue[500].value);
-    //img.drawChar(image2, img.arial_14, (width / 2).floor(), (height / 2).floor(), '🤣');
+    img.drawChar(image2, img.arial_48, 256, 256, '🤣', color: Colors.black.value);
     setState(() {
-      imagePath = image;
+      imagePath = image2;
     });
     //return image2;
     //img.draw
