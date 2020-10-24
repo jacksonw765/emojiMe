@@ -94,15 +94,15 @@ class _MyHomePageState extends State<MyHomePage> {
     var font = img.BitmapFont.fromZip(test.buffer.asUint8List());
 
     //List<String> colorVales = [];
-    img.Image image2 = img.copyResize(image, width: 512);
+    img.Image image2 = img.copyResize(image, width: 2048);
     int width = image2.width;
     int height = image2.height;
     for (int w = 0; w <= width; w += 20) {
       for (int h = 0; h <= height; h += 20) {
         //AABBGGRR
         int output = image2.getPixelSafe(w, h);
-        String yes = output.toRadixString(16);
-        img.drawString(image2, font, w, h, "☹", color: abgrToArgb2(hexToColor(yes)));
+        //String yes = output.toRadixString(16);
+        img.drawString(image2, font, w, h, "☹", color: output);
       }
     }
     //if (File('$dir/tmp.png').existsSync()) await File('$dir/tmp.png').delete();
