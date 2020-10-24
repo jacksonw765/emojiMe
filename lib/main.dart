@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -65,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget getImage() {
     if (imagePath != null) {
       Uint8List _image = imagePath.data.buffer.asUint8List();
-      print(_image);
+      //print(_image);
       //Uint8List.fromList()
       //ByteData.view(Uint8List.fromList(a).buffer).getUint32(0);
       return Image.memory(_image);
@@ -77,8 +78,21 @@ class _MyHomePageState extends State<MyHomePage> {
   void run() async {
     int indexVar = 16;
     File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
-    //imagePick.readAsBytesSync();
-    img.Image image = img.decodeImage(imagePick.readAsBytesSync());
+    final bytes = imagePick.readAsBytesSync();
+    String base64Image = base64Encode(bytes);
+    print(base64Image);
+    Uint8List byteList = base64Decode(base64Image);
+    img.Image image = img.decodeImage(byteList);
+    //var image = Image.memory(base64Image).image;
+    //img.Image image = img.Image(1024, 1024);
+
+    //img.Image image = img.decodeImage(base64Decode(base64));
+    //final bytes = Io.File(imageBytes.path).readAsBytesSync()
+    //img.Image =
+    //img.Image image = img.Image(1024, 1024, exif: imagePick.read);
+    //Uint8List test = imagePick.readAsBytesSync();
+    //Img.Image poo = Im
+    //img.Image image = img.Image(200, 200, exif: );
     int width = image.width;
     int height = image.height;
     print(width);
