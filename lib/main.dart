@@ -4,13 +4,17 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -86,18 +90,19 @@ class _MyHomePageState extends State<MyHomePage> {
     int indexVar = 16;
     File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
     img.Image image = img.decodeImage(imagePick.readAsBytesSync());
-    var font = img.BitmapFont.fromZip(File(dir + "/font.zip").readAsBytesSync());
+    ByteData test =  await rootBundle.load("assets/font.zip");
+    var font = img.BitmapFont.fromZip(test.buffer.asUint8List());
 
     //List<String> colorVales = [];
-    img.Image image2 = img.copyResize(image, width: 256);
+    img.Image image2 = img.copyResize(image, width: 512);
     int width = image2.width;
     int height = image2.height;
-    for (int w = 0; w <= width; w += 7) {
-      for (int h = 0; h <= height; h += 7) {
+    for (int w = 0; w <= width; w += 20) {
+      for (int h = 0; h <= height; h += 20) {
         //AABBGGRR
         int output = image2.getPixelSafe(w, h);
         String yes = output.toRadixString(16);
-        img.drawString(image2, font, w, h, "☹", color: abgrToArgb(hexToColor(yes).value));
+        img.drawString(image2, font, w, h, "☹", color: abgrToArgb2(hexToColor(yes)));
       }
     }
     //if (File('$dir/tmp.png').existsSync()) await File('$dir/tmp.png').delete();
@@ -114,6 +119,12 @@ class _MyHomePageState extends State<MyHomePage> {
     int r = (argbColor >> 16) & 0xFF;
     int b = argbColor & 0xFF;
     return (argbColor & 0xFF00FF00) | (b << 16) | r;
+  }
+
+  int abgrToArgb2(Color color) {
+    Color color2 = Color.fromARGB(0, color.red, color.green, color.blue);
+    print(color2.value);
+    return color2.value;
   }
 
   Color hexToColor(String code) {
