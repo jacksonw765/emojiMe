@@ -1,4 +1,3 @@
-
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -39,44 +38,66 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  img.Image imagePath;
 
   @override
   Widget build(BuildContext context) {
-    //var image = AssetImage('assets/img/spongebob.png');
-
-    //ByteData imageBytes = Services.load(imagePath);
-
     return Scaffold(
       body: Container(
         color: Colors.white,
         child: Center(
-          child: MaterialButton(
-            onPressed: run,
-            color: Colors.blue,
-          ),
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 80.0),
+              child: MaterialButton(
+                minWidth: 250,
+                onPressed: run,
+                color: Colors.blue,
+              ),
+            ),
+            getImage(),
+          ]),
         ),
       ),
     );
   }
 
+  Widget getImage() {
+    if (imagePath != null) {
+      Uint8List _image = imagePath.data.buffer.asUint8List();
+      print(_image);
+      //Uint8List.fromList()
+      //ByteData.view(Uint8List.fromList(a).buffer).getUint32(0);
+      return Image.memory(_image);
+    } else {
+      return Text('');
+    }
+  }
+
   void run() async {
     int indexVar = 16;
     File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
+    //imagePick.readAsBytesSync();
     img.Image image = img.decodeImage(imagePick.readAsBytesSync());
-    //var two = abgrToArgb(image.getPixelSafe(50, 200));
     int width = image.width;
     int height = image.height;
     print(width);
     print(height);
     List<String> colorVales = [];
-    for(int w = 0; w <= width; ++w) {
-      for(int h = 0; h <= height; ++h) {
+    for (int w = 0; w <= width; ++w) {
+      for (int h = 0; h <= height; ++h) {
         var output = image.getPixelSafe(w, h);
         var yes = output.toRadixString(16);
         colorVales.add(yes);
       }
     }
-    //img.drawString(image, img.BitmapFont.fromFnt(fnt, page), 0, 0, '🤣');
+    //img.Image image2 = img.Image(width, height);
+    //img.drawString(image2, img.BitmapFont.fromFnt("Ariel", image2), 0, 0, '🤣', color: Colors.blue[500].value);
+    //img.drawChar(image, img.arial_14, (width / 2).floor(), (height / 2).floor(), '🤣');
+    setState(() {
+      imagePath = image;
+    });
+    //return image2;
     //img.draw
     print('Done');
   }
@@ -88,7 +109,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Color getAverageColor(int color1, int color2) {
-
     //var hex1 = int.
     //var color = sqrt((R1^2+R2^2)/2),sqrt((G1^2+G2^2)/2),sqrt((B1^2+B2^2)/2)
   }
