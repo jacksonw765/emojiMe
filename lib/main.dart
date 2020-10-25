@@ -10,6 +10,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pinch_zoom/pinch_zoom.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,7 +74,15 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget getImage() {
     if (imagePath != null) {
       //File('$dir/tmp.png').writeAsBytesSync(img.encodePng(imagePath));
-      return Image.memory(img.encodePng(imagePath));
+      return Container(
+        height: 500,
+        child: PinchZoom(
+          image: Image.memory(img.encodePng(imagePath)),
+          zoomedBackgroundColor: Colors.transparent,
+          resetDuration: const Duration(milliseconds: 100),
+          //maxScale: 15.0,
+        ),
+      );
     } else {
       return Text('');
     }
@@ -90,19 +99,21 @@ class _MyHomePageState extends State<MyHomePage> {
     int indexVar = 16;
     File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
     img.Image image = img.decodeImage(imagePick.readAsBytesSync());
-    ByteData test =  await rootBundle.load("assets/font.zip");
+    ByteData test = await rootBundle.load("assets/font14.zip");
     var font = img.BitmapFont.fromZip(test.buffer.asUint8List());
 
-    //List<String> colorVales = [];
-    img.Image image2 = img.copyResize(image, width: 2048);
-    int width = image2.width;
-    int height = image2.height;
-    for (int w = 0; w <= width; w += 15) {
-      for (int h = 0; h <= height; h += 15) {
+    img.Image image3 = img.copyResize(image, width: (image.width / 2).floor());
+    img.Image image2 = img.Image(image3.width, image3.height);
+    image2.fill(Colors.black.value);
+    int width = image3.width;
+    int height = image3.height;
+    for (int w = 0; w <= width; w += 5) {
+      for (int h = 0; h <= height; h += 5) {
         //AABBGGRR
-        int output = image2.getPixelSafe(w, h);
+        int output = image3.getPixel(w, h);
+        //print(output);
         //String yes = output.toRadixString(16);
-        img.drawString(image2, font, w, h, "A", color: output);
+        img.drawString(image2, font, w, h, "⛄", color: output);
       }
     }
 
