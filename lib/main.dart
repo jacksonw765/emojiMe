@@ -97,21 +97,18 @@ class _MyHomePageState extends State<MyHomePage> {
     img.Image image2 = img.copyResize(image, width: 2048);
     int width = image2.width;
     int height = image2.height;
-    for (int w = 0; w <= width; w += 20) {
-      for (int h = 0; h <= height; h += 20) {
+    for (int w = 0; w <= width; w += 15) {
+      for (int h = 0; h <= height; h += 15) {
         //AABBGGRR
         int output = image2.getPixelSafe(w, h);
         //String yes = output.toRadixString(16);
-        img.drawString(image2, font, w, h, "☹", color: output);
+        img.drawString(image2, font, w, h, "A", color: output);
       }
     }
-    //if (File('$dir/tmp.png').existsSync()) await File('$dir/tmp.png').delete();
-    //img.drawChar(image2, img.arial_48, 256, 256, String.fromCharCode(128551), color: Colors.black.value);
+
     setState(() {
       imagePath = image2;
     });
-    //return image2;
-    //img.draw
     print('Done');
   }
 

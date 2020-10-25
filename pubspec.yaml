@@ -28,6 +28,7 @@ dependencies:
   hex: ^0.1.2
   path_provider: ^1.6.21
   permission_handler: ^5.0.1+1
+  image_editor_pro: ^1.0.6
 
 dev_dependencies:
   flutter_test:
