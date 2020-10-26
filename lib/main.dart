@@ -3,14 +3,16 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hex/hex.dart';
+import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pinch_zoom/pinch_zoom.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,15 +26,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'EmojieMe',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(),
@@ -48,24 +41,269 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   img.Image imagePath;
   String dir;
+  PanelController controller = PanelController();
+  static BoxShadow shadow2 = BoxShadow(spreadRadius: -20, color: Colors.black45, blurRadius: 20, offset: Offset(0, 14));
 
   @override
   Widget build(BuildContext context) {
+    //double width =
     return Scaffold(
-      body: Container(
-        color: Colors.white,
-        child: Center(
-          child: Column(children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 80.0),
-              child: MaterialButton(
-                minWidth: 250,
-                onPressed: run,
-                color: Colors.blue,
+      body: SafeArea(
+        bottom: false,
+        child: SlidingUpPanel(
+          controller: controller,
+          body: Padding(
+            padding: const EdgeInsets.only(top: 25),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: DottedBorder(
+                color: Colors.black45,
+                borderType: BorderType.RRect,
+                radius: Radius.circular(20),
+                child: Container(
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(20))),
+                  height: 475,
+                  width: 350,
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10.0, left: 10),
+                          child: Text(
+                            'Import Media',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 75.0),
+                        child: Container(
+                          child: Column(
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.add_a_photo_outlined),
+                                onPressed: null,
+                                iconSize: 96,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 25),
+                                child: Text(
+                                  'Or',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 18,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.photo_library_outlined),
+                                onPressed: null,
+                                iconSize: 96,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      //Text('Import Media', style: TextStyle(color: Colors.black, fontSize: 18)),
+                    ],
+                  ),
+                ),
               ),
             ),
-            getImage(),
-          ]),
+          ),
+          panel: Align(
+            alignment: Alignment.topRight,
+            child: FlatButton(
+              minWidth: 25,
+              onPressed: null,
+              //color: Colors.blue,
+              child: Column(children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center, //Center Row contents horizontally,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Spacer(
+                          flex: 54,
+                        ),
+                        Container(
+                          //color: Colors.black45,
+                          width: 50,
+                          height: 7,
+                          decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.all(Radius.circular(20))),
+                        ),
+                        Spacer(
+                          flex: 30,
+                        ),
+                        Text(
+                          'Generate',
+                          style: TextStyle(color: Colors.blue, fontSize: 18),
+                        ),
+                      ]),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 25, left: 15, right: 15),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      boxShadow: [shadow2],
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Res Usage',
+                          style: TextStyle(color: Colors.blue, fontSize: 18),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 25, right: 25),
+                          child: FlutterSlider(
+                            trackBar: FlutterSliderTrackBar(
+                              inactiveTrackBar: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                color: Colors.black12,
+                                border: Border.all(width: 3, color: Colors.black87),
+                              ),
+                              activeTrackBar: BoxDecoration(borderRadius: BorderRadius.circular(4), color: Colors.blue),
+                            ),
+                            //jump: true,
+                            tooltip: FlutterSliderTooltip(
+                                textStyle: TextStyle(fontSize: 16, color: Colors.black87),
+                                boxStyle: FlutterSliderTooltipBox(
+                                    decoration:
+                                        BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)), color: Colors.grey[300]))),
+                            hatchMark: FlutterSliderHatchMark(
+                              //linesDistanceFromTrackBar: 50,
+                              //density: .09,
+                              labels: [
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 0,
+                                    label: Text(
+                                      '25',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 33,
+                                    label: Text(
+                                      '50',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 66,
+                                    label: Text(
+                                      '75',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 100,
+                                    label: Text(
+                                      '100',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                              ], // means 50 lines, from 0 to 100 percent
+                            ),
+                            values: [25, 50, 75, 100],
+                            onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
+                              //setState(() {
+                              //  pointsToWin = lowerValue.toInt();
+                              //  data.setPointsToWin(pointsToWin);
+                              //});
+                            },
+                            min: 25,
+                            max: 100,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 25, left: 15, right: 15),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      boxShadow: [shadow2],
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Scale Count',
+                          style: TextStyle(color: Colors.blue, fontSize: 18),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 25, right: 25),
+                          child: FlutterSlider(
+                            trackBar: FlutterSliderTrackBar(
+                              inactiveTrackBar: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                color: Colors.black12,
+                                border: Border.all(width: 3, color: Colors.black87),
+                              ),
+                              activeTrackBar: BoxDecoration(borderRadius: BorderRadius.circular(4), color: Colors.blue),
+                            ),
+                            //jump: true,
+                            tooltip: FlutterSliderTooltip(
+                                textStyle: TextStyle(fontSize: 16, color: Colors.black87),
+                                boxStyle: FlutterSliderTooltipBox(
+                                    decoration:
+                                        BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)), color: Colors.grey[300]))),
+                            hatchMark: FlutterSliderHatchMark(
+                              //linesDistanceFromTrackBar: 50,
+                              //density: .09,
+                              labels: [
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 0,
+                                    label: Text(
+                                      '5',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 33,
+                                    label: Text(
+                                      '20',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 66,
+                                    label: Text(
+                                      '30',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 100,
+                                    label: Text(
+                                      '40',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                              ], // means 50 lines, from 0 to 100 percent
+                            ),
+                            values: [5, 20, 40, 60],
+                            onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
+                              //setState(() {
+                              //  pointsToWin = lowerValue.toInt();
+                              //  data.setPointsToWin(pointsToWin);
+                              //});
+                            },
+                            min: 5,
+                            max: 60,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+          borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
       ),
     );
@@ -121,26 +359,5 @@ class _MyHomePageState extends State<MyHomePage> {
       imagePath = image2;
     });
     print('Done');
-  }
-
-  int abgrToArgb(int argbColor) {
-    int r = (argbColor >> 16) & 0xFF;
-    int b = argbColor & 0xFF;
-    return (argbColor & 0xFF00FF00) | (b << 16) | r;
-  }
-
-  int abgrToArgb2(Color color) {
-    Color color2 = Color.fromARGB(0, color.red, color.green, color.blue);
-    print(color2.value);
-    return color2.value;
-  }
-
-  Color hexToColor(String code) {
-    return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
-  }
-
-  Color getAverageColor(int color1, int color2) {
-    //var hex1 = int.
-    //var color = sqrt((R1^2+R2^2)/2),sqrt((G1^2+G2^2)/2),sqrt((B1^2+B2^2)/2)
   }
 }
