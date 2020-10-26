@@ -46,14 +46,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    //double width =
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: SlidingUpPanel(
           controller: controller,
           body: Padding(
-            padding: const EdgeInsets.only(top: 25),
+            padding: const EdgeInsets.only(top: 35),
             child: Align(
               alignment: Alignment.topCenter,
               child: DottedBorder(
@@ -69,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 10.0, left: 10),
+                          padding: const EdgeInsets.only(top: 10.0, left: 15),
                           child: Text(
                             'Import Media',
                             style: TextStyle(
@@ -87,7 +86,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             children: [
                               IconButton(
                                 icon: Icon(Icons.add_a_photo_outlined),
-                                onPressed: null,
+                                onPressed: () {
+
+                                },
                                 iconSize: 96,
                               ),
                               Padding(
@@ -110,7 +111,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                       ),
-                      //Text('Import Media', style: TextStyle(color: Colors.black, fontSize: 18)),
                     ],
                   ),
                 ),
@@ -125,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
               //color: Colors.blue,
               child: Column(children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 10.0),
+                  padding: const EdgeInsets.only(top: 0.0),
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.center, //Center Row contents horizontally,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -140,11 +140,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.all(Radius.circular(20))),
                         ),
                         Spacer(
-                          flex: 30,
+                          flex: 20,
                         ),
-                        Text(
-                          'Generate',
-                          style: TextStyle(color: Colors.blue, fontSize: 18),
+                        FlatButton(
+                          onPressed: null,
+                          child: Text(
+                            'Generate',
+                            style: TextStyle(color: Colors.blue, fontSize: 18),
+                          ),
                         ),
                       ]),
                 ),
@@ -159,7 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Column(
                       children: [
                         Text(
-                          'Res Usage',
+                          'Resolution Percentage',
                           style: TextStyle(color: Colors.blue, fontSize: 18),
                         ),
                         Padding(
@@ -209,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     )),
                               ], // means 50 lines, from 0 to 100 percent
                             ),
-                            values: [25, 50, 75, 100],
+                            values: [50],
                             onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
                               //setState(() {
                               //  pointsToWin = lowerValue.toInt();
@@ -285,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     )),
                               ], // means 50 lines, from 0 to 100 percent
                             ),
-                            values: [5, 20, 40, 60],
+                            values: [12],
                             onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
                               //setState(() {
                               //  pointsToWin = lowerValue.toInt();
@@ -298,6 +301,47 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ],
                     ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 25, left: 15, right: 15, bottom: 5),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      boxShadow: [shadow2],
+                    ),
+                    child: Column(children: [
+                      Text(
+                        'Emoji',
+                        style: TextStyle(color: Colors.blue, fontSize: 18),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 15, right: 15),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Spacer(
+                              flex: 4,
+                            ),
+                            Text(
+                              ':)',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            Spacer(
+                              flex: 10,
+                            ),
+                            FlatButton(
+                              onPressed: null,
+                              child: Text(
+                                'Select',
+                                style: TextStyle(color: Colors.blue, fontSize: 18),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ]),
                   ),
                 ),
               ]),
