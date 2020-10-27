@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -6,17 +7,18 @@ import 'dart:ui';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:emojieme/chars.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'alerts.dart';
+import 'compute.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,12 +47,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   img.Image imagePath;
   img.Image orgImage;
-  String dir;
-  int resPercentage = 50;
-  int scaleCount = 12;
+
   PanelController controller = PanelController();
   Alerts alerts = Alerts();
-  static BoxShadow shadow2 = BoxShadow(spreadRadius: -20, color: Colors.black45, blurRadius: 20, offset: Offset(0, 14));
+  BoxShadow shadow2 = BoxShadow(spreadRadius: -20, color: Colors.black45, blurRadius: 20, offset: Offset(0, 14));
+  Computer computer = Computer();
 
   @override
   Widget build(BuildContext context) {
@@ -91,28 +92,15 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         FlatButton(
                           onPressed: () async {
-                            final directory = await getApplicationDocumentsDirectory();
-                            dir = directory.path;
-                            ByteData test = await rootBundle.load("assets/font14.zip");
-                            var font = img.BitmapFont.fromZip(test.buffer.asUint8List());
-                            double scaleValue = resPercentage / 100;
-                            img.Image image2 = img.copyResize(orgImage, width: (orgImage.width * scaleValue).floor());
-                            image2.fill(Colors.black.value);
-                            int width = image2.width;
-                            int height = image2.height;
-                            for (int w = 0; w <= width; w += scaleCount) {
-                              for (int h = 0; h <= height; h += scaleCount) {
-                                //AABBGGRR
-                                int output = orgImage.getPixel(w, h);
-                                //print(output);
-                                //String yes = output.toRadixString(16);
-                                img.drawString(image2, font, w, h, Char.selectedChar, color: output);
-                              }
+                            if (this.orgImage != null) {
+                              alerts.showLoading(context);
+                              await controller.close();
+                              final image3 = await computer.computeImage(orgImage);
+                              setState(() {
+                                imagePath = image3;
+                              });
+                              alerts.dismissContext();
                             }
-                            setState(() {
-                              imagePath = image2;
-                            });
-                            print('Done');
                           },
                           child: Text(
                             'Generate',
@@ -184,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             values: [50],
                             onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
-                              resPercentage = lowerValue.toInt();
+                              computer.resPercentage = lowerValue.toInt();
                             },
                             min: 25,
                             max: 100,
@@ -261,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               //  pointsToWin = lowerValue.toInt();
                               //  data.setPointsToWin(pointsToWin);
                               //});
-                              scaleCount = lowerValue.toInt();
+                              computer.scaleCount = lowerValue.toInt();
                             },
                             min: 5,
                             max: 60,
@@ -271,50 +259,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(top: 25, left: 15, right: 15, bottom: 5),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                      boxShadow: [shadow2],
-                    ),
-                    child: Column(children: [
-                      Text(
-                        'Emoji',
-                        style: TextStyle(color: Colors.blue, fontSize: 18),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15, right: 15),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Spacer(
-                              flex: 4,
-                            ),
-                            Text(
-                              Char.selectedChar,
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            Spacer(
-                              flex: 10,
-                            ),
-                            FlatButton(
-                              onPressed: () {
-                                showCharList(context);
-                                setState(() {});
-                              },
-                              child: Text(
-                                'Select',
-                                style: TextStyle(color: Colors.blue, fontSize: 18),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ]),
-                  ),
-                ),
+                SelectEmojiWidget()
               ]),
             ),
           ),
@@ -324,198 +269,64 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void showCharList(BuildContext context) async {
-    List<Widget> buildRows() {
-      List<Widget> retval = [];
-      for (int x = 0; x < Char.CHARS.length; x += 4) {
-        if (Char.CHARS.length > x + 3) {
-          retval.add(Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              charWidget(Char.CHARS[x]),
-              charWidget(Char.CHARS[x + 1]),
-              charWidget(Char.CHARS[x + 2]),
-              charWidget(Char.CHARS[x + 3]),
-            ],
-          ));
-        } else if (Char.CHARS.length > x + 2) {
-          retval.add(Row(
-            children: [
-              charWidget(Char.CHARS[x]),
-              charWidget(Char.CHARS[x + 1]),
-              charWidget(Char.CHARS[x + 2]),
-            ],
-          ));
-        } else if (Char.CHARS.length > x + 1) {
-          retval.add(Row(
-            children: [
-              charWidget(Char.CHARS[x]),
-              charWidget(Char.CHARS[x + 1]),
-            ],
-          ));
-        } else {
-          retval.add(Row(
-            children: [
-              charWidget(Char.CHARS[x]),
-            ],
-          ));
-        }
-      }
-      return retval;
-    }
-
-    await NDialog(
-      dialogStyle: DialogStyle(
-        titleDivider: true,
-      ),
-      title: Text("Select Emoji"),
-      content: Container(
-        height: 450,
-        width: 450,
-        child: ListView(
-          children: buildRows(),
-        ),
-      ),
-      //actions: <Widget>[],
-    ).show(context);
-  }
-
-  Widget charWidget(String char) {
-    return GestureDetector(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          height: 85,
-          width: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(15)),
-            boxShadow: [shadow2],
-            color: Colors.white,
-          ),
-          child: Center(
-            child: Text(
-              char,
-              style: TextStyle(fontSize: 32, color: Colors.black),
-            ),
-          ),
-        ),
-      ),
-      onTap: () {
-        setState(() {
-          Char.selectedChar = char;
-        });
-        Navigator.pop(context);
-      },
-    );
-  }
-
-  void perm() async {
-    await [Permission.mediaLibrary, Permission.photos].request();
-  }
-
-  void run() async {
-    final directory = await getApplicationDocumentsDirectory();
-    dir = directory.path;
-    perm();
-    int indexVar = 16;
-    File imagePick = await ImagePicker.pickImage(source: ImageSource.camera);
-    img.Image image = img.decodeImage(imagePick.readAsBytesSync());
-    ByteData test = await rootBundle.load("assets/font14.zip");
-    var font = img.BitmapFont.fromZip(test.buffer.asUint8List());
-
-    img.Image image3 = img.copyResize(image, width: (image.width / 2).floor());
-    img.Image image2 = img.Image(image3.width, image3.height);
-    image2.fill(Colors.black.value);
-    int width = image3.width;
-    int height = image3.height;
-    for (int w = 0; w <= width; w += 5) {
-      for (int h = 0; h <= height; h += 5) {
-        //AABBGGRR
-        int output = image3.getPixel(w, h);
-        //print(output);
-        //String yes = output.toRadixString(16);
-        img.drawString(image2, font, w, h, "⛄", color: output);
-      }
-    }
-
-    setState(() {
-      imagePath = image2;
-    });
-    print('Done');
-  }
-
   Widget buildImage() {
     if (orgImage != null && imagePath != null) {
-      return RepaintBoundary(
-        child: Stack(children: [
-          Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 10.0),
-              child: IconButton(
-                  icon: Icon(
-                    Icons.remove_circle,
-                    color: Colors.red,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      orgImage = null;
-                      imagePath = null;
-                    });
-                  }),
-            ),
+      return Stack(children: [
+        Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 10.0),
+            child: IconButton(
+                icon: Icon(
+                  Icons.remove_circle,
+                  color: Colors.red,
+                ),
+                onPressed: () {
+                  orgImage = null;
+                  imagePath = null;
+                  setState(() {});
+                }),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 50.0),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                //height: 500,
-                constraints: BoxConstraints(
-                    //maxHeight: 600,
-                    //maxWidth: 400,
-                    ),
-                child: Transform.rotate(angle: pi / 2, child: Image.memory(img.encodePng(imagePath))),
-              ),
-            ),
-          )
-        ]),
-      );
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 50.0),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Transform.rotate(
+                angle: pi / 2,
+                child: Image.memory(
+                  img.encodePng(imagePath),
+                  gaplessPlayback: true,
+                )),
+          ),
+        )
+      ]);
     } else if (orgImage != null) {
-      return RepaintBoundary(
-        child: Stack(children: [
-          Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 10.0),
-              child: IconButton(
-                  icon: Icon(
-                    Icons.remove_circle,
-                    color: Colors.red,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      orgImage = null;
-                    });
-                  }),
-            ),
+      return Stack(children: [
+        Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 10.0),
+            child: IconButton(
+                icon: Icon(
+                  Icons.remove_circle,
+                  color: Colors.red,
+                ),
+                onPressed: () {
+                  setState(() {
+                    orgImage = null;
+                  });
+                }),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 50.0),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                //height: 500,
-                constraints: BoxConstraints(
-                    //maxHeight: 600,
-                    //maxWidth: 400,
-                    ),
-                child: Transform.rotate(angle: pi / 2, child: Image.memory(img.encodePng(orgImage))),
-              ),
-            ),
-          )
-        ]),
-      );
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 50.0),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Transform.rotate(angle: pi / 2, child: Image.memory(img.encodePng(orgImage), gaplessPlayback: true)),
+          ),
+        )
+      ]);
     } else {
       return DottedBorder(
         color: Colors.black45,
@@ -551,12 +362,16 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () async {
                           await [Permission.camera].request();
                           alerts.showLoading(context);
-                          PickedFile imagePick = await ImagePicker.platform.pickImage(source: ImageSource.camera);
-                          Uint8List imageBytes = await imagePick.readAsBytes();
-                          alerts.dismissContext();
-                          setState(() {
-                            this.orgImage = img.decodeImage(imageBytes);
-                          });
+                          try {
+                            PickedFile imagePick = await ImagePicker.platform.pickImage(source: ImageSource.camera);
+                            Uint8List imageBytes = await imagePick.readAsBytes();
+                            alerts.dismissContext();
+                            setState(() {
+                              this.orgImage = img.decodeImage(imageBytes);
+                            });
+                          } catch (PlatformException) {
+                            alerts.dismissContext();
+                          }
                         },
                         iconSize: 96,
                       ),
