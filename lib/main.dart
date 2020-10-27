@@ -46,6 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
   img.Image imagePath;
   img.Image orgImage;
   String dir;
+  int resPercentage = 50;
+  int scaleCount = 12;
   PanelController controller = PanelController();
   Alerts alerts = Alerts();
   static BoxShadow shadow2 = BoxShadow(spreadRadius: -20, color: Colors.black45, blurRadius: 20, offset: Offset(0, 14));
@@ -88,7 +90,30 @@ class _MyHomePageState extends State<MyHomePage> {
                           flex: 20,
                         ),
                         FlatButton(
-                          onPressed: null,
+                          onPressed: () async {
+                            final directory = await getApplicationDocumentsDirectory();
+                            dir = directory.path;
+                            ByteData test = await rootBundle.load("assets/font14.zip");
+                            var font = img.BitmapFont.fromZip(test.buffer.asUint8List());
+                            double scaleValue = resPercentage / 100;
+                            img.Image image2 = img.copyResize(orgImage, width: (orgImage.width * scaleValue).floor());
+                            image2.fill(Colors.black.value);
+                            int width = image2.width;
+                            int height = image2.height;
+                            for (int w = 0; w <= width; w += scaleCount) {
+                              for (int h = 0; h <= height; h += scaleCount) {
+                                //AABBGGRR
+                                int output = orgImage.getPixel(w, h);
+                                //print(output);
+                                //String yes = output.toRadixString(16);
+                                img.drawString(image2, font, w, h, Char.selectedChar, color: output);
+                              }
+                            }
+                            setState(() {
+                              imagePath = image2;
+                            });
+                            print('Done');
+                          },
                           child: Text(
                             'Generate',
                             style: TextStyle(color: Colors.blue, fontSize: 18),
@@ -159,10 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             values: [50],
                             onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
-                              //setState(() {
-                              //  pointsToWin = lowerValue.toInt();
-                              //  data.setPointsToWin(pointsToWin);
-                              //});
+                              resPercentage = lowerValue.toInt();
                             },
                             min: 25,
                             max: 100,
@@ -239,6 +261,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               //  pointsToWin = lowerValue.toInt();
                               //  data.setPointsToWin(pointsToWin);
                               //});
+                              scaleCount = lowerValue.toInt();
                             },
                             min: 5,
                             max: 60,
@@ -309,31 +332,31 @@ class _MyHomePageState extends State<MyHomePage> {
           retval.add(Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              CharWidget3(Char.CHARS[x]),
-              CharWidget3(Char.CHARS[x + 1]),
-              CharWidget3(Char.CHARS[x + 2]),
-              CharWidget3(Char.CHARS[x + 3]),
+              charWidget(Char.CHARS[x]),
+              charWidget(Char.CHARS[x + 1]),
+              charWidget(Char.CHARS[x + 2]),
+              charWidget(Char.CHARS[x + 3]),
             ],
           ));
         } else if (Char.CHARS.length > x + 2) {
           retval.add(Row(
             children: [
-              CharWidget3(Char.CHARS[x]),
-              CharWidget3(Char.CHARS[x + 1]),
-              CharWidget3(Char.CHARS[x + 2]),
+              charWidget(Char.CHARS[x]),
+              charWidget(Char.CHARS[x + 1]),
+              charWidget(Char.CHARS[x + 2]),
             ],
           ));
         } else if (Char.CHARS.length > x + 1) {
           retval.add(Row(
             children: [
-              CharWidget3(Char.CHARS[x]),
-              CharWidget3(Char.CHARS[x + 1]),
+              charWidget(Char.CHARS[x]),
+              charWidget(Char.CHARS[x + 1]),
             ],
           ));
         } else {
           retval.add(Row(
             children: [
-              CharWidget3(Char.CHARS[x]),
+              charWidget(Char.CHARS[x]),
             ],
           ));
         }
@@ -357,7 +380,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ).show(context);
   }
 
-  Widget CharWidget3(String char) {
+  Widget charWidget(String char) {
     return GestureDetector(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -378,11 +401,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       onTap: () {
-        print('here');
+        setState(() {
           Char.selectedChar = char;
-          setState(() {});
-
-        //Navigator.pop(context);
+        });
+        Navigator.pop(context);
       },
     );
   }
@@ -423,39 +445,77 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildImage() {
-    if (orgImage != null) {
-      return Stack(children: [
-        Align(
-          alignment: Alignment.topLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 10.0),
-            child: IconButton(
-                icon: Icon(
-                  Icons.remove_circle,
-                  color: Colors.red,
-                ),
-                onPressed: () {
-                  setState(() {
-                    orgImage = null;
-                  });
-                }),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 50.0),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              //height: 500,
-              constraints: BoxConstraints(
-                  //maxHeight: 600,
-                  //maxWidth: 400,
+    if (orgImage != null && imagePath != null) {
+      return RepaintBoundary(
+        child: Stack(children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10.0),
+              child: IconButton(
+                  icon: Icon(
+                    Icons.remove_circle,
+                    color: Colors.red,
                   ),
-              child: Transform.rotate(angle: pi / 2, child: Image.memory(img.encodePng(orgImage))),
+                  onPressed: () {
+                    setState(() {
+                      orgImage = null;
+                      imagePath = null;
+                    });
+                  }),
             ),
           ),
-        )
-      ]);
+          Padding(
+            padding: const EdgeInsets.only(top: 50.0),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                //height: 500,
+                constraints: BoxConstraints(
+                    //maxHeight: 600,
+                    //maxWidth: 400,
+                    ),
+                child: Transform.rotate(angle: pi / 2, child: Image.memory(img.encodePng(imagePath))),
+              ),
+            ),
+          )
+        ]),
+      );
+    } else if (orgImage != null) {
+      return RepaintBoundary(
+        child: Stack(children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10.0),
+              child: IconButton(
+                  icon: Icon(
+                    Icons.remove_circle,
+                    color: Colors.red,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      orgImage = null;
+                    });
+                  }),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 50.0),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                //height: 500,
+                constraints: BoxConstraints(
+                    //maxHeight: 600,
+                    //maxWidth: 400,
+                    ),
+                child: Transform.rotate(angle: pi / 2, child: Image.memory(img.encodePng(orgImage))),
+              ),
+            ),
+          )
+        ]),
+      );
     } else {
       return DottedBorder(
         color: Colors.black45,
