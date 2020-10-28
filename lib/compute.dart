@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
@@ -24,7 +23,7 @@ class Computer {
   Future<img.Image> computeImage() async {
     double scaleValue = resPercentage / 100;
     int scaleWidth = (orgImage.width * scaleValue).floor();
-    img.Image image2 = img.copyResize(orgImage, width: scaleWidth);
+    img.Image image2 = img.copyResize(orgImage, width: scaleWidth, interpolation: img.Interpolation.linear);
     //img.Image image3 = img.Image(image2.width, image2.height);
     image2.fill(Colors.black.value);
     int width = image2.width;

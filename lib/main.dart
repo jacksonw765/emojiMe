@@ -15,6 +15,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pinch_zoom/pinch_zoom.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'alerts.dart';
@@ -286,9 +287,13 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Align(
             alignment: Alignment.topCenter,
             child: Container(
-              //height: 500,
-              child: Image.memory(
-                img.encodePng(computer.generatedImage),
+              height: 500,
+              child: PinchZoom(
+                zoomedBackgroundColor: Colors.transparent,
+                resetDuration: const Duration(milliseconds: 100),
+                image: Image.memory(
+                  img.encodePng(computer.generatedImage),
+                ),
               ),
             ),
           ),
@@ -296,13 +301,12 @@ class _MyHomePageState extends State<MyHomePage> {
       ]);
     } else if (computer.orgImage != null) {
       return Container(
-        //width: ,
         child: Stack(children: [
           Align(
             alignment: Alignment.topCenter,
             child: Container(
                 child: Image.memory(
-              img.encodeJpg(computer.orgImage),
+              img.encodePng(computer.orgImage),
               width: computer.orgImage.width.toDouble() / 11,
               //height: orgImage.height.toDouble(),
             )),
@@ -362,7 +366,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           try {
                             PickedFile imagePick = await ImagePicker.platform.pickImage(source: ImageSource.camera);
                             Uint8List imageBytes = await imagePick.readAsBytes();
-                            computer.orgImage = img.decodeImage(imageBytes);
+                            computer.orgImage = img.bakeOrientation(img.decodeImage(imageBytes));
                             alerts.dismissContext();
                             setState(() {});
                             await controller.open();
