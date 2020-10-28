@@ -45,9 +45,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  img.Image imagePath;
-  img.Image orgImage;
-
   PanelController controller = PanelController();
   Alerts alerts = Alerts();
   BoxShadow shadow2 = BoxShadow(spreadRadius: -20, color: Colors.black45, blurRadius: 20, offset: Offset(0, 14));
@@ -92,12 +89,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         FlatButton(
                           onPressed: () async {
-                            if (this.orgImage != null) {
+                            if (computer.orgImage != null) {
                               alerts.showLoading(context);
                               await controller.close();
-                              final image3 = await computer.computeImage(orgImage);
+                              final tmpImg = await computer.computeImage();
                               setState(() {
-                                imagePath = image3;
+                                computer.generatedImage = tmpImg;
                               });
                               alerts.dismissContext();
                             }
@@ -170,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     )),
                               ], // means 50 lines, from 0 to 100 percent
                             ),
-                            values: [50],
+                            values: [computer.resPercentage.toDouble()],
                             onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
                               computer.resPercentage = lowerValue.toInt();
                             },
@@ -243,12 +240,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     )),
                               ], // means 50 lines, from 0 to 100 percent
                             ),
-                            values: [12],
+                            values: [computer.scaleCount.toDouble()],
                             onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
-                              //setState(() {
-                              //  pointsToWin = lowerValue.toInt();
-                              //  data.setPointsToWin(pointsToWin);
-                              //});
                               computer.scaleCount = lowerValue.toInt();
                             },
                             min: 5,
@@ -270,7 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildImage() {
-    if (orgImage != null && imagePath != null) {
+    if (computer.orgImage != null && computer.generatedImage != null) {
       return Stack(children: [
         Align(
           alignment: Alignment.topLeft,
@@ -282,8 +275,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Colors.red,
                 ),
                 onPressed: () {
-                  orgImage = null;
-                  imagePath = null;
+                  computer.orgImage = null;
+                  computer.generatedImage = null;
                   setState(() {});
                 }),
           ),
@@ -292,21 +285,32 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.only(top: 50.0),
           child: Align(
             alignment: Alignment.topCenter,
-            child: Transform.rotate(
-                angle: pi / 2,
-                child: Image.memory(
-                  img.encodePng(imagePath),
-                  gaplessPlayback: true,
-                )),
+            child: Container(
+              //height: 500,
+              child: Image.memory(
+                img.encodePng(computer.generatedImage),
+              ),
+            ),
           ),
         )
       ]);
-    } else if (orgImage != null) {
-      return Stack(children: [
-        Align(
-          alignment: Alignment.topLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 10.0),
+    } else if (computer.orgImage != null) {
+      return Container(
+        //width: ,
+        child: Stack(children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+                child: Image.memory(
+              img.encodeJpg(computer.orgImage),
+              width: computer.orgImage.width.toDouble() / 11,
+              //height: orgImage.height.toDouble(),
+            )),
+          ),
+          Positioned(
+            left: 15,
+            top: -15,
+            //bottom: -15,
             child: IconButton(
                 icon: Icon(
                   Icons.remove_circle,
@@ -314,19 +318,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 onPressed: () {
                   setState(() {
-                    orgImage = null;
+                    computer.orgImage = null;
                   });
                 }),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 50.0),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Transform.rotate(angle: pi / 2, child: Image.memory(img.encodePng(orgImage), gaplessPlayback: true)),
-          ),
-        )
-      ]);
+        ]),
+      );
     } else {
       return DottedBorder(
         color: Colors.black45,
@@ -365,10 +362,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           try {
                             PickedFile imagePick = await ImagePicker.platform.pickImage(source: ImageSource.camera);
                             Uint8List imageBytes = await imagePick.readAsBytes();
+                            computer.orgImage = img.decodeImage(imageBytes);
                             alerts.dismissContext();
-                            setState(() {
-                              this.orgImage = img.decodeImage(imageBytes);
-                            });
+                            setState(() {});
+                            await controller.open();
                           } catch (PlatformException) {
                             alerts.dismissContext();
                           }
