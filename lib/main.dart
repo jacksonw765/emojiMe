@@ -1,19 +1,13 @@
-import 'dart:io';
-import 'dart:isolate';
-import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:emojieme/chars.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pinch_zoom/pinch_zoom.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -57,6 +51,10 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SafeArea(
         bottom: false,
         child: SlidingUpPanel(
+          //minHeight: 600,
+          //parallaxEnabled: true,
+          //parallaxOffset: 25.0,
+          maxHeight: 550,
           controller: controller,
           body: Padding(
             padding: const EdgeInsets.only(top: 35),
@@ -71,44 +69,41 @@ class _MyHomePageState extends State<MyHomePage> {
               minWidth: 25,
               onPressed: null,
               child: Column(children: [
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.center, //Center Row contents horizontally,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Spacer(
+                        flex: 54,
+                      ),
+                      Container(
+                        width: 50,
+                        height: 7,
+                        decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.all(Radius.circular(20))),
+                      ),
+                      Spacer(
+                        flex: 20,
+                      ),
+                      FlatButton(
+                        onPressed: () async {
+                          if (computer.orgImage != null) {
+                            alerts.showLoading(context);
+                            await controller.close();
+                            final tmpImg = await computer.computeImage();
+                            setState(() {
+                              computer.generatedImage = tmpImg;
+                            });
+                            alerts.dismissContext();
+                          }
+                        },
+                        child: Text(
+                          'Generate',
+                          style: TextStyle(color: Colors.blue, fontSize: 18),
+                        ),
+                      ),
+                    ]),
                 Padding(
-                  padding: const EdgeInsets.only(top: 0.0),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center, //Center Row contents horizontally,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Spacer(
-                          flex: 54,
-                        ),
-                        Container(
-                          width: 50,
-                          height: 7,
-                          decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.all(Radius.circular(20))),
-                        ),
-                        Spacer(
-                          flex: 20,
-                        ),
-                        FlatButton(
-                          onPressed: () async {
-                            if (computer.orgImage != null) {
-                              alerts.showLoading(context);
-                              await controller.close();
-                              final tmpImg = await computer.computeImage();
-                              setState(() {
-                                computer.generatedImage = tmpImg;
-                              });
-                              alerts.dismissContext();
-                            }
-                          },
-                          child: Text(
-                            'Generate',
-                            style: TextStyle(color: Colors.blue, fontSize: 18),
-                          ),
-                        ),
-                      ]),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 25, left: 15, right: 15),
+                  padding: EdgeInsets.only(top: 15, left: 15, right: 15),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -191,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Column(
                       children: [
                         Text(
-                          'Scale Count',
+                          'Count Per Pixel',
                           style: TextStyle(color: Colors.blue, fontSize: 18),
                         ),
                         Padding(
@@ -241,9 +236,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                     )),
                               ], // means 50 lines, from 0 to 100 percent
                             ),
-                            values: [computer.scaleCount.toDouble()],
+                            values: [computer.countPerPixel.toDouble()],
                             onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
-                              computer.scaleCount = lowerValue.toInt();
+                              computer.countPerPixel = lowerValue.toInt();
                             },
                             min: 5,
                             max: 60,
@@ -253,7 +248,89 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ),
-                SelectEmojiWidget()
+                Padding(
+                  padding: EdgeInsets.only(top: 25, left: 15, right: 15),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      boxShadow: [shadow2],
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Emoji Scale',
+                          style: TextStyle(color: Colors.blue, fontSize: 18),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 25, right: 25),
+                          child: FlutterSlider(
+                            jump: true,
+                            trackBar: FlutterSliderTrackBar(
+                              inactiveTrackBar: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                color: Colors.black12,
+                                border: Border.all(width: 3, color: Colors.black87),
+                              ),
+                              activeTrackBar: BoxDecoration(borderRadius: BorderRadius.circular(4), color: Colors.blue),
+                            ),
+                            //values: [ 10, 50 ],
+                            fixedValues: [
+                              FlutterSliderFixedValue(percent: 0, value: "14"),
+                              FlutterSliderFixedValue(percent: 33, value: "18"),
+                              FlutterSliderFixedValue(percent: 66, value: "22"),
+                              FlutterSliderFixedValue(percent: 100, value: "26"),
+                            ],
+                            //jump: true,
+                            tooltip: FlutterSliderTooltip(
+                                textStyle: TextStyle(fontSize: 16, color: Colors.black87),
+                                boxStyle: FlutterSliderTooltipBox(
+                                    decoration:
+                                        BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)), color: Colors.grey[300]))),
+                            hatchMark: FlutterSliderHatchMark(
+                              //linesDistanceFromTrackBar: 50,
+                              //density: .09,
+                              labels: [
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 0,
+                                    label: Text(
+                                      '14',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 33,
+                                    label: Text(
+                                      '18',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 66,
+                                    label: Text(
+                                      '22',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                                FlutterSliderHatchMarkLabel(
+                                    percent: 100,
+                                    label: Text(
+                                      '26',
+                                      style: TextStyle(color: Colors.black, fontSize: 12),
+                                    )),
+                              ], // means 50 lines, from 0 to 100 percent
+                            ),
+
+                            values: [computer.selectedFont.toDouble()],
+                            onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
+                              computer.selectedFont = int.parse(lowerValue);
+                            },
+                            min: 14,
+                            max: 26,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SelectEmojiWidget(),
               ]),
             ),
           ),
@@ -265,55 +342,58 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget buildImage() {
     if (computer.orgImage != null && computer.generatedImage != null) {
+      // display generated image
       return Stack(children: [
         Align(
-          alignment: Alignment.topLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 10.0),
-            child: IconButton(
-                icon: Icon(
-                  Icons.remove_circle,
-                  color: Colors.red,
-                ),
-                onPressed: () {
-                  computer.orgImage = null;
-                  computer.generatedImage = null;
-                  setState(() {});
-                }),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 50.0),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              height: 500,
-              child: PinchZoom(
-                zoomedBackgroundColor: Colors.transparent,
-                resetDuration: const Duration(milliseconds: 100),
-                image: Image.memory(
-                  img.encodePng(computer.generatedImage),
-                ),
+          alignment: Alignment.topCenter,
+          child: Container(
+            margin: EdgeInsets.all(10),
+            height: 475,
+            child: PinchZoom(
+              zoomedBackgroundColor: Colors.transparent,
+              resetDuration: const Duration(milliseconds: 100),
+              image: Image.memory(
+                img.encodePng(computer.generatedImage),
               ),
             ),
           ),
-        )
+        ),
+        Positioned(
+          left: 7,
+          top: -10,
+          //bottom: -15,
+          child: IconButton(
+              icon: Icon(
+                Icons.remove_circle,
+                color: Colors.red,
+              ),
+              onPressed: () {
+                computer.orgImage = null;
+                computer.generatedImage = null;
+                setState(() {});
+              }),
+        ),
       ]);
     } else if (computer.orgImage != null) {
+      // display captured image
       return Container(
         child: Stack(children: [
           Align(
             alignment: Alignment.topCenter,
             child: Container(
-                child: Image.memory(
-              img.encodePng(computer.orgImage),
-              width: computer.orgImage.width.toDouble() / 11,
-              //height: orgImage.height.toDouble(),
-            )),
+                margin: EdgeInsets.all(10),
+                height: 475,
+                child: PinchZoom(
+                  zoomedBackgroundColor: Colors.transparent,
+                  resetDuration: const Duration(milliseconds: 100),
+                  image: Image.memory(
+                    img.encodePng(computer.orgImage),
+                  ),
+                )),
           ),
           Positioned(
-            left: 15,
-            top: -15,
+            left: 7,
+            top: -10,
             //bottom: -15,
             child: IconButton(
                 icon: Icon(
