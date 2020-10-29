@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -5,12 +6,16 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:emojieme/chars.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:image/image.dart' as img;
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pinch_zoom/pinch_zoom.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 import 'alerts.dart';
 import 'compute.dart';
@@ -45,15 +50,19 @@ class _MyHomePageState extends State<MyHomePage> {
   BoxShadow shadow2 = BoxShadow(spreadRadius: -20, color: Colors.black45, blurRadius: 20, offset: Offset(0, 14));
   Computer computer = Computer();
 
+  _MyHomePageState() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.portraitUp,
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: SlidingUpPanel(
-          //minHeight: 600,
-          //parallaxEnabled: true,
-          //parallaxOffset: 25.0,
           maxHeight: 550,
           controller: controller,
           body: Padding(
@@ -73,9 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     mainAxisAlignment: MainAxisAlignment.center, //Center Row contents horizontally,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Spacer(
-                        flex: 54,
-                      ),
+                      getSaveOrSpacer(),
                       Container(
                         width: 50,
                         height: 7,
@@ -87,13 +94,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       FlatButton(
                         onPressed: () async {
                           if (computer.orgImage != null) {
-                            alerts.showLoading(context);
+                            alerts.showLoading(context, "Generating Image...");
                             await controller.close();
-                            final tmpImg = await computer.computeImage();
+                            img.Image tmpImg = await computer.computeImage();
                             setState(() {
                               computer.generatedImage = tmpImg;
                             });
+                            tmpImg = null;
                             alerts.dismissContext();
+                          } else {
+                            alerts.showAlert(context, "Import an Image");
                           }
                         },
                         child: Text(
@@ -219,19 +229,19 @@ class _MyHomePageState extends State<MyHomePage> {
                                 FlutterSliderHatchMarkLabel(
                                     percent: 33,
                                     label: Text(
-                                      '20',
+                                      '15',
                                       style: TextStyle(color: Colors.black, fontSize: 12),
                                     )),
                                 FlutterSliderHatchMarkLabel(
                                     percent: 66,
                                     label: Text(
-                                      '30',
+                                      '25',
                                       style: TextStyle(color: Colors.black, fontSize: 12),
                                     )),
                                 FlutterSliderHatchMarkLabel(
                                     percent: 100,
                                     label: Text(
-                                      '40',
+                                      '35',
                                       style: TextStyle(color: Colors.black, fontSize: 12),
                                     )),
                               ], // means 50 lines, from 0 to 100 percent
@@ -241,7 +251,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               computer.countPerPixel = lowerValue.toInt();
                             },
                             min: 5,
-                            max: 60,
+                            max: 35,
                           ),
                         ),
                       ],
@@ -263,67 +273,26 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: TextStyle(color: Colors.blue, fontSize: 18),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 25, right: 25),
-                          child: FlutterSlider(
-                            jump: true,
-                            trackBar: FlutterSliderTrackBar(
-                              inactiveTrackBar: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                color: Colors.black12,
-                                border: Border.all(width: 3, color: Colors.black87),
-                              ),
-                              activeTrackBar: BoxDecoration(borderRadius: BorderRadius.circular(4), color: Colors.blue),
-                            ),
-                            //values: [ 10, 50 ],
-                            fixedValues: [
-                              FlutterSliderFixedValue(percent: 0, value: "14"),
-                              FlutterSliderFixedValue(percent: 33, value: "18"),
-                              FlutterSliderFixedValue(percent: 66, value: "22"),
-                              FlutterSliderFixedValue(percent: 100, value: "26"),
+                          padding: const EdgeInsets.only(left: 25, right: 25, bottom: 15, top: 15),
+                          child: ToggleSwitch(
+                            //minWidth: 100.0,
+                            //minHeight: 40.0,
+                            initialLabelIndex: computer.selectedFontIndex,
+                            cornerRadius: 12.0,
+                            activeFgColor: Colors.white,
+                            inactiveBgColor: Colors.grey,
+                            inactiveFgColor: Colors.white,
+                            labels: ['14', '18', '22', '26'],
+                            activeBgColors: [
+                              Colors.blue,
+                              Colors.blue,
+                              Colors.blue,
+                              Colors.blue,
                             ],
-                            //jump: true,
-                            tooltip: FlutterSliderTooltip(
-                                textStyle: TextStyle(fontSize: 16, color: Colors.black87),
-                                boxStyle: FlutterSliderTooltipBox(
-                                    decoration:
-                                        BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)), color: Colors.grey[300]))),
-                            hatchMark: FlutterSliderHatchMark(
-                              //linesDistanceFromTrackBar: 50,
-                              //density: .09,
-                              labels: [
-                                FlutterSliderHatchMarkLabel(
-                                    percent: 0,
-                                    label: Text(
-                                      '14',
-                                      style: TextStyle(color: Colors.black, fontSize: 12),
-                                    )),
-                                FlutterSliderHatchMarkLabel(
-                                    percent: 33,
-                                    label: Text(
-                                      '18',
-                                      style: TextStyle(color: Colors.black, fontSize: 12),
-                                    )),
-                                FlutterSliderHatchMarkLabel(
-                                    percent: 66,
-                                    label: Text(
-                                      '22',
-                                      style: TextStyle(color: Colors.black, fontSize: 12),
-                                    )),
-                                FlutterSliderHatchMarkLabel(
-                                    percent: 100,
-                                    label: Text(
-                                      '26',
-                                      style: TextStyle(color: Colors.black, fontSize: 12),
-                                    )),
-                              ], // means 50 lines, from 0 to 100 percent
-                            ),
-
-                            values: [computer.selectedFont.toDouble()],
-                            onDragCompleted: (int handlerIndex, dynamic lowerValue, dynamic upperValue) {
-                              computer.selectedFont = int.parse(lowerValue);
+                            onToggle: (index) {
+                              computer.selectedFont = computer.fontRange[index];
+                              computer.selectedFontIndex = index;
                             },
-                            min: 14,
-                            max: 26,
                           ),
                         ),
                       ],
@@ -338,6 +307,33 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  Widget getSaveOrSpacer() {
+    if (computer.generatedImage != null) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 116.5),
+        child: IconButton(
+          icon: Icon(Icons.save_alt_outlined),
+          color: Colors.black,
+          onPressed: () async {
+            await [Permission.storage, Permission.mediaLibrary].request();
+            String time = DateTime.now().toIso8601String();
+            try {
+              final result = await ImageGallerySaver.saveImage(Uint8List.fromList(img.encodeJpg(computer.generatedImage)),
+                  quality: 100, name: "emojime_$time");
+              alerts.showAlert(context, "File saved!");
+            } catch (PlatformException) {
+              alerts.showAlert(context, "Failed to save. :(");
+            }
+          },
+        ),
+      );
+    } else {
+      return Container(
+        width: 162,
+      );
+    }
   }
 
   Widget buildImage() {
@@ -442,7 +438,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         icon: Icon(Icons.add_a_photo_outlined),
                         onPressed: () async {
                           await [Permission.camera].request();
-                          alerts.showLoading(context);
+                          alerts.showLoading(context, "Reading Image...");
                           try {
                             PickedFile imagePick = await ImagePicker.platform.pickImage(source: ImageSource.camera);
                             Uint8List imageBytes = await imagePick.readAsBytes();
@@ -469,7 +465,20 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       IconButton(
                         icon: Icon(Icons.photo_library_outlined),
-                        onPressed: null,
+                        onPressed: () async {
+                          await [Permission.photos].request();
+                          alerts.showLoading(context, "Reading Image...");
+                          try {
+                            PickedFile imagePick = await ImagePicker.platform.pickImage(source: ImageSource.gallery);
+                            Uint8List imageBytes = await imagePick.readAsBytes();
+                            computer.orgImage = img.bakeOrientation(img.decodeImage(imageBytes));
+                            alerts.dismissContext();
+                            setState(() {});
+                            await controller.open();
+                          } catch (PlatformException) {
+                            alerts.dismissContext();
+                          }
+                        },
                         iconSize: 96,
                       ),
                     ],

@@ -9,8 +9,10 @@ class Computer {
   int resPercentage = 50;
   int countPerPixel = 12;
   int selectedFont = 18;
+  int selectedFontIndex = 1;
   img.Image orgImage;
   img.Image generatedImage;
+  List<int> fontRange = [14, 18, 22, 26];
 
   Future<void> loadFont() async {
     String fontStr = "assets/font$selectedFont.zip";
@@ -22,10 +24,7 @@ class Computer {
     await loadFont();
     double scaleValue = resPercentage / 100;
     int scaleWidth = (orgImage.width * scaleValue).floor();
-    img.Image imgCopy = img.copyResize(
-      orgImage,
-      width: scaleWidth,
-    );
+    img.Image imgCopy = img.copyResize(orgImage, width: scaleWidth);
     img.Image retImage = img.Image(imgCopy.width, imgCopy.height);
     retImage.fill(Colors.black.value);
     int width = retImage.width;
