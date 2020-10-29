@@ -49,7 +49,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Alerts alerts = Alerts();
   Computer computer = Computer();
 
-  _MyHomePageState() {
+  @override
+  void initState() {
+    super.initState();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitDown,
       DeviceOrientation.portraitUp,
@@ -319,7 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget getSaveOrSpacer() {
     if (computer.generatedImage != null) {
       return Padding(
-        padding: const EdgeInsets.only(right: 116.5),
+        padding: const EdgeInsets.only(left: 10.0),
         child: IconButton(
           icon: Icon(Icons.save_alt_outlined),
           color: Colors.black,
@@ -345,7 +347,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget buildImage() {
     if (computer.orgImage != null && computer.generatedImage != null) {
-      // display generated image
       return Stack(children: [
         Align(
           alignment: Alignment.topCenter,
