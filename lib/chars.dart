@@ -1,3 +1,4 @@
+import 'package:emojieme/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
@@ -16,22 +17,27 @@ class SelectEmojiWidget extends StatefulWidget {
 }
 
 class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
-  final shadow2 = BoxShadow(spreadRadius: -20, color: Colors.black45, blurRadius: 20, offset: Offset(0, 14));
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 25, left: 15, right: 15, bottom: 5),
+      padding: EdgeInsets.only(top: 30, left: 15, right: 15, bottom: 5),
       child: Container(
+        constraints: BoxConstraints(
+            maxWidth: 350
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(20)),
-          boxShadow: [shadow2],
+          boxShadow: [Styles.topShadow, Styles.bottomShadow],
         ),
         child: Column(children: [
-          Text(
-            'Emoji',
-            style: TextStyle(color: Colors.blue, fontSize: 18),
+          Padding(
+            padding: const EdgeInsets.only(top: 7.0),
+            child: Text(
+              'Emoji',
+              style: TextStyle(color: Colors.blue, fontSize: 18),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 15, right: 15),
@@ -88,7 +94,7 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
       for (int x = 0; x < Char.CHARS.length; x += 4) {
         if (Char.CHARS.length > x + 3) {
           retval.add(Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               charWidget(Char.CHARS[x]),
               charWidget(Char.CHARS[x + 1]),
@@ -98,6 +104,7 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
           ));
         } else if (Char.CHARS.length > x + 2) {
           retval.add(Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               charWidget(Char.CHARS[x]),
               charWidget(Char.CHARS[x + 1]),
@@ -106,6 +113,7 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
           ));
         } else if (Char.CHARS.length > x + 1) {
           retval.add(Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               charWidget(Char.CHARS[x]),
               charWidget(Char.CHARS[x + 1]),
@@ -113,6 +121,7 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
           ));
         } else {
           retval.add(Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               charWidget(Char.CHARS[x]),
             ],
@@ -130,9 +139,6 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
           backgroundColor: Colors.white,
           body: SafeArea(
             child: Container(
-              //color: Colors.white,
-              //height: 450,
-              //width: 450,
               child: ListView(
                 children: buildRows(),
               ),
@@ -149,13 +155,13 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
   Widget charWidget(String char) {
     return GestureDetector(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.only(top: 10.0, bottom: 10, left: 17, right: 17),
         child: Container(
           height: 85,
           width: 60,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(15)),
-            boxShadow: [shadow2],
+            borderRadius: BorderRadius.all(Radius.circular(17)),
+            boxShadow: [Styles.topShadow, Styles.bottomShadow],
             color: Colors.white,
           ),
           child: Center(
