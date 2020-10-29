@@ -78,22 +78,17 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 15.0, top: 10),
-            child: Transform.rotate(
-              angle: pi/4,
-              child: IconButton(
-                icon: Icon(Icons.add_circle_outline_outlined),
-                color: Colors.black,
-                iconSize: 25,
-                onPressed: () => Navigator.pop(context),
-              ),
+            child: IconButton(
+              icon: Icon(Icons.arrow_back_ios),
+              color: Colors.black,
+              iconSize: 25,
+              onPressed: () => Navigator.pop(context),
             ),
           ),
           //Spacer(flex: 30),
-          Center(
-            child: Text(
-              'Select Emoji',
-              style: TextStyle(color: Colors.black, fontSize: 18),
-            ),
+          Text(
+            'Select Emoji',
+            style: TextStyle(color: Colors.black, fontSize: 18),
           ),
           //Spacer(flex: 50),
         ],
@@ -132,37 +127,17 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
         context: context,
         builder: (_) =>
         new AlertDialog(
-          //shape: RoundedRectangleBorder(
-           //   borderRadius: BorderRadius.all(Radius.circular(10.0))
-          //),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: buildRows(),
+          contentPadding: EdgeInsets.all(0.0),
+          content: Container(
+            height: 400,
+            width: 400,
+            child: ListView(
+                children: buildRows(),
             ),
           ),
         )
     );
 
-    /*
-    showAnimatedDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return  Material(
-          child: SingleChildScrollView(
-            child: ListBody(
-                children: buildRows(),
-            ),
-          ),
-        );
-      },
-
-      animationType: DialogTransitionType.slideFromBottomFade,
-      curve: Curves.fastOutSlowIn,
-      duration: Duration(milliseconds: 300),
-    );
-
-     */
   }
 
   Widget charWidget(String char) {
@@ -180,7 +155,7 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
           child: Center(
             child: Text(
               char,
-              style: TextStyle(fontSize: 32, color: Colors.black),
+              style: TextStyle(fontSize: 30, color: Colors.black),
             ),
           ),
         ),
