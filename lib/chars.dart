@@ -49,7 +49,7 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
                 ),
                 Text(
                   Char.selectedChar,
-                  style: TextStyle(fontSize: 28),
+                  style: TextStyle(fontSize: 32),
                 ),
                 Spacer(
                   flex: 10,
@@ -79,16 +79,18 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
             child: IconButton(
               icon: Icon(Icons.arrow_back_ios),
               color: Colors.black,
-              iconSize: 20,
+              iconSize: 25,
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          Spacer(flex: 30),
-          Text(
-            'Select Emoji',
-            style: TextStyle(color: Colors.black, fontSize: 18),
+          //Spacer(flex: 30),
+          Center(
+            child: Text(
+              'Select Emoji',
+              style: TextStyle(color: Colors.black, fontSize: 18),
+            ),
           ),
-          Spacer(flex: 50),
+          //Spacer(flex: 50),
         ],
       ));
       for (int x = 0; x < Char.CHARS.length; x += 4) {
