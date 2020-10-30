@@ -78,17 +78,23 @@ class _SelectEmojiWidgetState extends State<SelectEmojiWidget> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 15.0, top: 10),
-            child: IconButton(
-              icon: Icon(Icons.arrow_back_ios),
-              color: Colors.black,
-              iconSize: 25,
-              onPressed: () => Navigator.pop(context),
+            child: Transform.rotate(
+              angle: pi/4,
+              child: IconButton(
+                icon: Icon(Icons.add_circle_outline_rounded),
+                color: Colors.black,
+                iconSize: 25,
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
           ),
           //Spacer(flex: 30),
-          Text(
-            'Select Emoji',
-            style: TextStyle(color: Colors.black, fontSize: 18),
+          Padding(
+            padding: const EdgeInsets.only(left: 10.0),
+            child: Text(
+              'Select Emoji',
+              style: TextStyle(color: Colors.black, fontSize: 18),
+            ),
           ),
           //Spacer(flex: 50),
         ],

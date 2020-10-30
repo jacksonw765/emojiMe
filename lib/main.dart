@@ -7,6 +7,7 @@ import 'package:emojieme/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'EmojiMe',
+      debugShowCheckedModeBanner: false,
       home: MyHomePage(),
     );
   }
@@ -45,13 +47,18 @@ class _MyHomePageState extends State<MyHomePage> {
   Alerts alerts = Alerts();
   Computer computer = Computer();
 
+  void setStatus() async {
+    await FlutterStatusbarcolor.setStatusBarWhiteForeground(false);
+  }
+
   @override
   void initState() {
-    super.initState();
+    setStatus();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitDown,
       DeviceOrientation.portraitUp,
     ]);
+    super.initState();
   }
 
   @override
@@ -316,8 +323,7 @@ class _MyHomePageState extends State<MyHomePage> {
             await [Permission.storage, Permission.mediaLibrary].request();
             String time = DateTime.now().toIso8601String();
             try {
-              await ImageGallerySaver.saveImage(Uint8List.fromList(img.encodeJpg(computer.generatedImage)),
-                  quality: 100, name: "emojime_$time");
+              await ImageGallerySaver.saveImage(Uint8List.fromList(img.encodeJpg(computer.generatedImage)), quality: 100, name: "emojime_$time");
               alerts.showAlert(context, "File saved!");
             } catch (PlatformException) {
               alerts.showAlert(context, "Failed to save. :(");
@@ -345,15 +351,18 @@ class _MyHomePageState extends State<MyHomePage> {
               resetDuration: const Duration(milliseconds: 100),
               image: Image.memory(
                 img.encodePng(computer.generatedImage),
+                //width: 600,
+                //height: 600,
+                //cacheWidth: 600,
+                //cacheHeight: 600,
+                filterQuality: FilterQuality.medium,
                 gaplessPlayback: true,
               ),
             ),
           ),
         ),
         Positioned(
-          left: 7,
-          top: -10,
-          //bottom: -15,
+          left: 7, top: -10, //bottom: -15,
           child: IconButton(
               icon: Icon(
                 Icons.remove_circle,
@@ -381,13 +390,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   image: Image.memory(
                     img.encodePng(computer.orgImage),
                     gaplessPlayback: true,
+                    //width: 600,
+                    //height: 600,
+                    //cacheWidth: 600,
+                    //cacheHeight: 600,
+                    filterQuality: FilterQuality.medium,
                   ),
                 )),
           ),
           Positioned(
-            left: 7,
-            top: -10,
-            //bottom: -15,
+            left: 7, top: -10, //bottom: -15,
             child: IconButton(
                 icon: Icon(
                   Icons.remove_circle,
@@ -438,9 +450,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           alerts.showLoading(context, "Reading Image...");
                           try {
                             final _picker = ImagePicker();
-                            PickedFile imagePick = await _picker.getImage(source: ImageSource.camera);
+                            PickedFile imagePick = await _picker.getImage(source: ImageSource.camera, maxHeight: 1024, maxWidth: 1024, imageQuality: 75);
                             Uint8List imageBytes = await imagePick.readAsBytes();
                             computer.orgImage = img.bakeOrientation(img.decodeImage(imageBytes));
+                            setStatus();
                             alerts.dismissContext();
                             setState(() {});
                             await controller.open();
@@ -468,9 +481,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           alerts.showLoading(context, "Reading Image...");
                           try {
                             final _picker = ImagePicker();
-                            PickedFile imagePick = await _picker.getImage(source: ImageSource.gallery);
+                            PickedFile imagePick = await _picker.getImage(source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024, imageQuality: 75);
                             Uint8List imageBytes = await imagePick.readAsBytes();
                             computer.orgImage = img.bakeOrientation(img.decodeImage(imageBytes));
+                            setStatus();
                             alerts.dismissContext();
                             setState(() {});
                             await controller.open();
